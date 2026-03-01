@@ -1,5 +1,5 @@
 import os
-import cloudscraper
+import requests
 from bs4 import BeautifulSoup
 import psycopg2
 from dotenv import load_dotenv
@@ -11,28 +11,52 @@ load_dotenv(caminho_env)
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-URL_PRODUTO = "https://www.mercadolivre.com.br/placa-de-video-nvidia-msi-gaming-x-trio-geforce-rtx-40-series-rtx-4090-24gb/p/MLB21036464"
-NOME_PRODUTO = "RTX 4090 MSI Gaming X Trio 24GB"
-LOJA = "Mercado Livre"
+# --- AGORA A URL É A PÁGINA PRINCIPAL DO CATÁLOGO ---
+URL_CATALOGO = "http://books.toscrape.com/index.html"
+LOJA = "Books to Scrape"
 
-def pegar_preco_mercado_livre(url):
-    # O CloudScraper tenta imitar um navegador real para evitar bloqueios anti-bot
-    scraper = cloudscraper.create_scraper() 
-    resposta = scraper.get(url)
+def pegar_varios_livros(url):
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+    }
+    
+    resposta = requests.get(url, headers=headers)
+    livros_coletados = [] # Uma lista vazia para guardarmos todos os livros que acharmos
     
     if resposta.status_code == 200:
         soup = BeautifulSoup(resposta.text, 'html.parser')
-        preco_elemento = soup.find("span", class_="andes-money-amount__fraction")
         
-        if preco_elemento:
-            preco_texto = preco_elemento.text.replace(".", "")
-            return float(preco_texto)
-        else:
-            print("Mercado Livre bloqueou com Captcha. Elemento não encontrado.")
-            return None
+        # O BeautifulSoup vai procurar TODOS os blocos de código que representam um livro na tela
+        blocos_de_livros = soup.find_all("article", class_="product_pod")
+        
+        # Para cada livro que ele encontrar, vamos extrair os dados:
+        for bloco in blocos_de_livros:
+            # 1. Pega o título (fica escondido dentro da tag <a> do <h3>)
+            titulo = bloco.h3.a["title"]
+            
+            # 2. Pega o preço
+            preco_elemento = bloco.find("p", class_="price_color")
+            if preco_elemento:
+                preco_texto = preco_elemento.text.replace("£", "").replace("Â", "").strip()
+                preco_float = float(preco_texto)
+            else:
+                preco_float = 0.0
+                
+            # 3. Pega o link do livro para salvar junto
+            link_relativo = bloco.h3.a["href"]
+            link_completo = f"http://books.toscrape.com/{link_relativo}"
+            
+            # Guarda as informações deste livro na nossa lista
+            livros_coletados.append({
+                "titulo": titulo,
+                "preco": preco_float,
+                "link": link_completo
+            })
+            
+        return livros_coletados
     else:
         print(f"Erro ao acessar a página: Status {resposta.status_code}")
-        return None
+        return []
 
 def salvar_no_banco(produto, loja, preco, link):
     conexao = None
@@ -46,9 +70,9 @@ def salvar_no_banco(produto, loja, preco, link):
         """
         cursor.execute(query, (produto, loja, preco, link))
         conexao.commit()
-        print(f"VITÓRIA! Preço de R$ {preco} salvo com sucesso no banco de dados!")
+        print(f"✅ Salvo: {produto} - £ {preco}")
     except Exception as e:
-        print(f"Erro ao salvar no banco: {e}")
+        print(f"❌ Erro ao salvar '{produto}' no banco: {e}")
     finally:
         if cursor:
             cursor.close()
@@ -56,14 +80,16 @@ def salvar_no_banco(produto, loja, preco, link):
             conexao.close()
 
 if __name__ == "__main__":
-    print(f"Iniciando coleta de dados para: {NOME_PRODUTO}...")
-    preco_atual = pegar_preco_mercado_livre(URL_PRODUTO)
+    print(f"Iniciando coleta em massa no catálogo: {URL_CATALOGO}...")
+    lista_de_livros = pegar_varios_livros(URL_CATALOGO)
     
-    if preco_atual:
-        salvar_no_banco(NOME_PRODUTO, LOJA, preco_atual, URL_PRODUTO)
+    if lista_de_livros:
+        print(f"Encontrados {len(lista_de_livros)} livros! Enviando para o banco de dados...")
+        
+        # Um laço de repetição para salvar cada livro da lista no banco de dados
+        for livro in lista_de_livros:
+            salvar_no_banco(livro["titulo"], LOJA, livro["preco"], livro["link"])
+            
+        print("Coleta e armazenamento concluídos com sucesso!")
     else:
-        # Plano B: Para o portfólio não parar, se for bloqueado, salva o preço anterior com uma pequena variação de centavos
-        print("Ativando Plano B de contingência para manter o pipeline...")
-        import random
-        preco_simulado = 23899.00 + random.uniform(-10, 10)
-        salvar_no_banco(NOME_PRODUTO, f"{LOJA} (Fallback)", round(preco_simulado, 2), URL_PRODUTO)
+        print("Nenhum livro foi encontrado na página.")
