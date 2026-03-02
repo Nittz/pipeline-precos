@@ -55,38 +55,48 @@ else:
         col2.metric("⏱️ Última Atualização do Robô", df['data_coleta'].max().strftime('%d/%m/%Y %H:%M'))
         
         st.subheader("Top 10 Produtos Mais Caros (Atualmente)")
-        # 1. Ordena tudo do mais recente para o mais antigo
+        # Lógica corrigida para pegar os preços mais recentes de cada produto
         df_recente = df.sort_values('data_coleta', ascending=False)
-        # 2. Remove duplicatas mantendo apenas o preço mais novo de CADA produto
         df_ultima_coleta = df_recente.drop_duplicates(subset=['produto'], keep='first')
-        # 3. Agora sim, pega os 10 mais caros dessa lista filtrada
         df_top10 = df_ultima_coleta.nlargest(10, 'preco')
         
-        # Gráfico de barras ajustado
+        # Gráfico de barras
         st.bar_chart(data=df_top10.set_index('produto')['preco'])
+
     # --- TELA 2: PRODUTO ESPECÍFICO ---
     else:
         # Filtra os dados só para o produto escolhido
         df_prod = df[df['produto'] == produto_selecionado].copy()
         
-        # Cálculos Inteligentes para os KPIs
+        # Cálculos de máximas e mínimas
         preco_atual = float(df_prod.iloc[-1]['preco'])
         max_preco = float(df_prod['preco'].max())
         min_preco = float(df_prod['preco'].min())
         
-        # Calcula se o preço caiu ou subiu em relação à coleta anterior
+        # Cálculo Turbinado: Variação Absoluta e Porcentagem
         if len(df_prod) > 1:
             preco_anterior = float(df_prod.iloc[-2]['preco'])
             variacao = preco_atual - preco_anterior
+            
+            # Evita divisão por zero caso o preço anterior fosse 0
+            if preco_anterior > 0:
+                variacao_percentual = (variacao / preco_anterior) * 100
+            else:
+                variacao_percentual = 0.0
+                
+            # Monta o texto que vai aparecer no KPI (Ex: "£ -2.50 (-4.8%)")
+            delta_texto = f"£ {variacao:.2f} ({variacao_percentual:.2f}%)"
         else:
             variacao = 0.0
+            delta_texto = "£ 0.00 (0.00%)"
 
         st.subheader(f"Análise de: {produto_selecionado}")
         
-        # Mostra as Caixas de KPIs (Igual bolsa de valores)
+        # Mostra as Caixas de KPIs 
         kpi1, kpi2, kpi3 = st.columns(3)
-        # Se a variação for negativa, o Streamlit já pinta a setinha de verde para queda de preço! (Inverte o padrão se quiser usando delta_color)
-        kpi1.metric(label="Preço Atual", value=f"£ {preco_atual:.2f}", delta=f"{variacao:.2f}", delta_color="inverse")
+        
+        # delta_color="inverse" deixa a queda de preço verde (bom para comprar) e alta vermelha.
+        kpi1.metric(label="Preço Atual", value=f"£ {preco_atual:.2f}", delta=delta_texto, delta_color="inverse")
         kpi2.metric(label="Maior Preço Histórico", value=f"£ {max_preco:.2f}")
         kpi3.metric(label="Menor Preço Histórico", value=f"£ {min_preco:.2f}")
         
@@ -97,10 +107,13 @@ else:
     
     # --- ÁREA DE DADOS BRUTOS E EXPORTAÇÃO ---
     st.subheader("Tabela de Dados Brutos")
+    
     # Formata a data bonitinha pra tabela
     df_exibicao = df.copy()
     df_exibicao['data_coleta'] = df_exibicao['data_coleta'].dt.strftime('%d/%m/%Y %H:%M:%S')
-    st.dataframe(df_exibicao, use_container_width=True)
+    
+    # O SEGREDO DO VISUAL LIMPO: hide_index=True
+    st.dataframe(df_exibicao, hide_index=True, use_container_width=True)
     
     # Botão Mágico para baixar Excel/CSV
     csv = df_exibicao.to_csv(index=False).encode('utf-8')
