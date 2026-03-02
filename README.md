@@ -39,27 +39,35 @@ O projeto foi desenhado para rodar inteiramente na nuvem, sem necessidade de pro
 ## 🚀 Como executar este projeto localmente
 
 ### 1. Clone o repositório
+```bash
 git clone [https://github.com/Nittz/pipeline-precos.git](https://github.com/Nittz/pipeline-precos.git)
 cd pipeline-precos
+```
 
-2. Crie um ambiente virtual e instale as dependências
+### 2. Crie um ambiente virtual e instale as dependências
+```bash
 python -m venv venv
 source venv/bin/activate  # No Windows use: venv\Scripts\activate
 pip install -r requirements.txt
+```
 
-3. Configure as Variáveis de Ambiente
-Crie um arquivo .env na raiz do projeto e adicione a string de conexão do seu banco de dados PostgreSQL:
+### 3. Configure as Variáveis de Ambiente
+Crie um arquivo `.env` na raiz do projeto e adicione a string de conexão do seu banco de dados PostgreSQL:
+```env
+DATABASE_URL="postgresql://usuario:senha@seu_host.neon.tech/nome_do_banco?sslmode=require"
+```
 
-Fragmento do código
-DATABASE_URL="postgresql://usuario:senha@seu_host.neon.tech/nome_do_banco?sslmode=re
-
-4. Execute a Extração de Dados
+### 4. Execute a Extração de Dados
 Para rodar o robô de raspagem e popular o banco de dados:
+```bash
 python scrapper.py
+```
 
-
-5. Inicie o Dashboard
+### 5. Inicie o Dashboard
 Para visualizar o painel interativo localmente no seu navegador:
+```bash
 python -m streamlit run app.py
+```
 
-Desenvolvido por Felipe para portfólio de Engenharia de Dados.
+---
+*Desenvolvido por Felipe para portfólio de Engenharia de Dados.*
