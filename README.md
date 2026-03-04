@@ -17,24 +17,24 @@ O pipeline extrai dados diariamente, carrega-os em um banco de dados relacional 
 ## 🏗️ Arquitetura e Fluxo de Dados (ETL)
 O projeto foi desenhado para rodar inteiramente na nuvem, sem necessidade de processamento local:
 
-1. ** Extração (Extract):** Um script em Python (`scrapper.py`) utiliza `requests` e `BeautifulSoup` para fazer o web scraping de múltiplos produtos do catálogo (Books to Scrape). O script contorna bloqueios simples utilizando Headers (`User-Agent`).
-2. ** Carga (Load):** Os dados brutos (Nome, Preço, Link) são inseridos em um banco de dados **PostgreSQL** hospedado na AWS através do serviço **Neon.tech**, utilizando a biblioteca `psycopg2`.
-3. ** Orquestração (Orchestrate):** O **GitHub Actions** atua como o motor de automação do projeto. Um arquivo de workflow (`automacao.yml`) utilizando sintaxe *Cron* cria uma máquina virtual Linux diariamente, instala as dependências e executa o script de extração no piloto automático.
-4. ** Visualização (Visualize):** Um aplicativo web desenvolvido com **Streamlit** consome os dados atualizados do banco via queries SQL e apresenta um painel interativo hospedado no **Streamlit Community Cloud**.
+1. **Extração (Extract):** Um script em Python (`scrapper.py`) utiliza `requests` e `BeautifulSoup` para fazer o web scraping de múltiplos produtos do catálogo (Books to Scrape). O script contorna bloqueios simples utilizando Headers (`User-Agent`).
+2. **Carga (Load):** Os dados brutos (Nome, Preço, Link) são inseridos em um banco de dados **PostgreSQL** hospedado na AWS através do serviço **Neon.tech**, utilizando a biblioteca `psycopg2`.
+3. **Orquestração (Orchestrate):** O **GitHub Actions** atua como o motor de automação do projeto. Um arquivo de workflow (`automacao.yml`) utilizando sintaxe *Cron* cria uma máquina virtual Linux diariamente, instala as dependências e executa o script de extração no piloto automático.
+4. **Visualização (Visualize):** Um aplicativo web desenvolvido com **Streamlit** consome os dados atualizados do banco via queries SQL e apresenta um painel interativo hospedado no **Streamlit Community Cloud**.
 
 ## 📊 Funcionalidades do Dashboard
-- ** Visão Geral:** Gráfico de barras destacando os Top 10 produtos mais caros do catálogo atual.
-- ** Análise Individual:** Menu interativo para selecionar produtos específicos.
-- ** Métricas Financeiras (KPIs):** Cálculo automático de Preço Atual, Maior/Menor Preço Histórico e **Variação Percentual** em relação à coleta anterior.
-- ** Gráfico de Evolução:** Acompanhamento temporal da flutuação de preços em gráficos de linha.
-- ** Exportação:** Botão para download dos dados brutos consolidados em formato `.csv` para análises em outras ferramentas.
+- **Visão Geral:** Gráfico de barras destacando os Top 10 produtos mais caros do catálogo atual.
+- **Análise Individual:** Menu interativo para selecionar produtos específicos.
+- **Métricas Financeiras (KPIs):** Cálculo automático de Preço Atual, Maior/Menor Preço Histórico e **Variação Percentual** em relação à coleta anterior.
+- **Gráfico de Evolução:** Acompanhamento temporal da flutuação de preços em gráficos de linha.
+- **Exportação:** Botão para download dos dados brutos consolidados em formato `.csv` para análises em outras ferramentas.
 
 ## 💻 Tecnologias Utilizadas
-- ** Linguagem:** Python
-- ** Bibliotecas Base:** `pandas`, `requests`, `beautifulsoup4`, `psycopg2-binary`, `python-dotenv`
-- ** Banco de Dados:** PostgreSQL (Neon.tech)
-- ** Visualização de Dados:** Streamlit
-- ** Automação:** GitHub Actions CI/CD
+- **Linguagem:** Python
+- **Bibliotecas Base:** `pandas`, `requests`, `beautifulsoup4`, `psycopg2-binary`, `python-dotenv`
+- **Banco de Dados:** PostgreSQL (Neon.tech)
+- **Visualização de Dados:** Streamlit
+- **Automação:** GitHub Actions CI/CD
 
 ## 🚀 Como executar este projeto localmente
 
