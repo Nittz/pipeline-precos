@@ -36,13 +36,20 @@ else:
     # Garantir que a data é tratada corretamente
     df['data_coleta'] = pd.to_datetime(df['data_coleta'])
     
+    # 🧹 O SEGREDO DO SUCESSO: LIMPEZA DE DADOS
+    # Esta linha remove todos os espaços invisíveis no início ou fim dos nomes dos livros.
+    # Isto impede que o sistema trate o mesmo livro como dois produtos diferentes.
+    df['produto'] = df['produto'].astype(str).str.strip()
+    
     # --- MENU LATERAL (SIDEBAR) ---
     st.sidebar.header("⚙️ Filtros e Buscas")
-    produtos_unicos = df['produto'].unique()
+    
+    # Ordena os produtos de A a Z para o menu ficar profissional
+    produtos_unicos = sorted(df['produto'].unique())
     
     produto_selecionado = st.sidebar.selectbox(
         "Selecione um produto para análise detalhada:", 
-        ["Visão Geral (Todos)"] + list(produtos_unicos)
+        ["Visão Geral (Todos)"] + produtos_unicos
     )
 
     st.sidebar.info("💡 Dica: Os dados são atualizados automaticamente todos os dias pelo nosso bot na nuvem!")
@@ -55,12 +62,13 @@ else:
         col2.metric("⏱️ Última Atualização do Robô", df['data_coleta'].max().strftime('%d/%m/%Y %H:%M'))
         
         st.subheader("Top 10 Produtos Mais Caros (Atualmente)")
-        # Lógica corrigida para pegar os preços mais recentes de cada produto
+        
+        # Filtra para pegar apenas o preço mais recente de cada produto limpo
         df_recente = df.sort_values('data_coleta', ascending=False)
         df_ultima_coleta = df_recente.drop_duplicates(subset=['produto'], keep='first')
         df_top10 = df_ultima_coleta.nlargest(10, 'preco')
         
-        # Gráfico de barras
+        # Gráfico de barras sem repetições
         st.bar_chart(data=df_top10.set_index('produto')['preco'])
 
     # --- TELA 2: PRODUTO ESPECÍFICO ---
@@ -112,10 +120,10 @@ else:
     df_exibicao = df.copy()
     df_exibicao['data_coleta'] = df_exibicao['data_coleta'].dt.strftime('%d/%m/%Y %H:%M:%S')
     
-    # O SEGREDO DO VISUAL LIMPO: hide_index=True
+    # Exibe a tabela ocultando o índice numérico
     st.dataframe(df_exibicao, hide_index=True, use_container_width=True)
     
-    # Botão Mágico para baixar Excel/CSV
+    # Botão para baixar Excel/CSV
     csv = df_exibicao.to_csv(index=False).encode('utf-8')
     st.download_button(
         label="📥 Baixar Histórico Completo em CSV",
