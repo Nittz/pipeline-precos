@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import psycopg2
 import os
+import numpy as np
 from dotenv import load_dotenv
 
 # Carrega a senha do banco de dados
@@ -45,6 +46,21 @@ else:
     # --- MENU LATERAL (SIDEBAR) ---
     st.sidebar.header("⚙️ Filtros e Buscas")
     
+    # 🎲 TRUQUE DE PORTFÓLIO: Simulador de flutuações de mercado
+    st.sidebar.markdown("---")
+    modo_demo = st.sidebar.toggle("🎲 Modo Portfólio (Simular Variações)", value=False, help="Como o site alvo tem preços estáticos, ative isto para gerar flutuações artificiais nos dados e ver os gráficos a funcionar!")
+    
+    if modo_demo:
+        # Fixamos a semente (seed) para que as variações sejam aleatórias, mas não mudem a cada clique
+        np.random.seed(42)
+        # Multiplica o preço original por um fator aleatório entre 0.8 (-20%) e 1.2 (+20%)
+        df['preco'] = df['preco'] * np.random.uniform(0.8, 1.2, size=len(df))
+        # Arredonda para 2 casas decimais
+        df['preco'] = df['preco'].round(2)
+        
+        st.sidebar.success("Variações de mercado ativadas!")
+    st.sidebar.markdown("---")
+
     # Ordena os produtos de A a Z para o menu ficar profissional
     produtos_unicos = sorted(df['produto'].unique())
     
