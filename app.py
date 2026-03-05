@@ -11,8 +11,9 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 # Configura a página para ocupar a tela toda
 st.set_page_config(page_title="Monitor de Preços", page_icon="📈", layout="wide")
 
+# Mudámos o nome da função para FORÇAR o Streamlit a limpar o cache antigo da memória
 @st.cache_data(ttl=60)
-def buscar_dados():
+def carregar_dados_historico():
     try:
         conexao = psycopg2.connect(DATABASE_URL)
         query = "SELECT data_coleta, produto, loja, preco, link_produto FROM historico_precos ORDER BY data_coleta ASC;"
@@ -23,7 +24,7 @@ def buscar_dados():
         st.error(f"Erro ao conectar com o banco: {e}")
         return pd.DataFrame()
 
-df = buscar_dados()
+df = carregar_dados_historico()
 
 # --- TÍTULO DO DASHBOARD ---
 st.title("📈 Dashboard de Monitoramento de Preços")
@@ -36,10 +37,10 @@ else:
     # Garantir que a data é tratada corretamente
     df['data_coleta'] = pd.to_datetime(df['data_coleta'])
     
-    # 🧹 O SEGREDO DO SUCESSO: LIMPEZA DE DADOS
-    # Esta linha remove todos os espaços invisíveis no início ou fim dos nomes dos livros.
-    # Isto impede que o sistema trate o mesmo livro como dois produtos diferentes.
-    df['produto'] = df['produto'].astype(str).str.strip()
+    # 🧹 LIMPEZA DE CHOQUE (Regex)
+    # Substitui qualquer tipo de espaço bizarro de web scraping (\xa0, tabs, quebras de linha)
+    # por um espaço normal, e limpa as bordas. 
+    df['produto'] = df['produto'].astype(str).str.replace(r'\s+', ' ', regex=True).str.strip()
     
     # --- MENU LATERAL (SIDEBAR) ---
     st.sidebar.header("⚙️ Filtros e Buscas")
@@ -114,10 +115,10 @@ else:
     st.divider()
     
     # --- ÁREA DE DADOS BRUTOS E EXPORTAÇÃO ---
-    st.subheader("Tabela de Dados Brutos")
+    st.subheader("Tabela de Dados Brutos (Mais Recentes no Topo)")
     
-    # Formata a data bonitinha pra tabela
-    df_exibicao = df.copy()
+    # Organiza a tabela para mostrar o que o robô pegou hoje primeiro
+    df_exibicao = df.sort_values('data_coleta', ascending=False).copy()
     df_exibicao['data_coleta'] = df_exibicao['data_coleta'].dt.strftime('%d/%m/%Y %H:%M:%S')
     
     # Exibe a tabela ocultando o índice numérico
