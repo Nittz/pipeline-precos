@@ -41,9 +41,6 @@ O projeto foi desenhado para rodar inteiramente na nuvem, sem necessidade de pro
 # Lembre-se de trocar SEU_USUARIO pelo seu nome de usuário no GitHub
 git clone [https://github.com/SEU_USUARIO/pipeline_precos.git](https://github.com/SEU_USUARIO/pipeline_precos.git)
 cd pipeline_precos
-=======
-git clone [https://github.com/Nittz/pipeline-precos.git](https://github.com/Nittz/pipeline-precos.git)
-cd pipeline-precos
 ```
 
 ### 2. Crie um ambiente virtual e instale as dependências
@@ -71,5 +68,5 @@ Para visualizar o painel interativo localmente no seu navegador:
 python -m streamlit run app.py
 ```
 
----
+
 *Desenvolvido por Felipe para portfólio de Engenharia de Dados.*
