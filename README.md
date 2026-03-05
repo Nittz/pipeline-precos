@@ -38,7 +38,6 @@ O projeto foi desenhado para rodar inteiramente na nuvem, sem necessidade de pro
 
 ### 1. Clone o repositório
 ```bash
-<<<<<<< HEAD
 # Lembre-se de trocar SEU_USUARIO pelo seu nome de usuário no GitHub
 git clone [https://github.com/SEU_USUARIO/pipeline_precos.git](https://github.com/SEU_USUARIO/pipeline_precos.git)
 cd pipeline_precos
