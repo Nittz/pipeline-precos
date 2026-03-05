@@ -74,4 +74,3 @@ python -m streamlit run app.py
 
 ---
 *Desenvolvido por Felipe para portfólio de Engenharia de Dados.*
->>>>>>> 0c0368b0aa912a88064147e0adaedbdfdbf5e5fd
