@@ -48,7 +48,8 @@ else:
     
     # 🎲 TRUQUE DE PORTFÓLIO: Simulador de flutuações de mercado
     st.sidebar.markdown("---")
-    modo_demo = st.sidebar.toggle("🎲 Modo Portfólio (Simular Variações)", value=False, help="Como o site alvo tem preços estáticos, ative isto para gerar flutuações artificiais nos dados e ver os gráficos a funcionar!")
+    # Trocámos o 'toggle' por 'checkbox' para garantir 100% de compatibilidade em qualquer versão!
+    modo_demo = st.sidebar.checkbox("🎲 Modo Portfólio (Simular Variações)", value=False, help="Como o site alvo tem preços estáticos, ative isto para gerar flutuações artificiais nos dados e ver os gráficos a funcionar!")
     
     if modo_demo:
         # Fixamos a semente (seed) para que as variações sejam aleatórias, mas não mudem a cada clique
